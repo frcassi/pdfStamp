@@ -8,20 +8,52 @@ from reportlab.lib.units import cm
 old_path = ("./Modulo covid - modificabile .pdf")
 new_path = ("./Modulo covid aggiornato.pdf")
 
-# Set things to be writter
-string_to_write = "Ricreatorio Pontedecimo"
-pos_x = 3.45*cm
-pos_y = 13.6*cm
+# Set strings to be written
+fields = [
+    {
+        'name':'location',
+        'pos_x':3.45*cm,
+        'pos_y':13.6*cm,
+        'page':1,
+        'font_size':10
+    },
+    {
+        'name':'date',
+        'pos_x':16.45*cm,
+        'pos_y':14.5*cm,
+        'page':1,
+        'font_size':10
+    },
+    {
+        'name':'sig_loc_date',
+        'pos_x':3.4*cm,
+        'pos_y':3.2*cm,
+        'page':2,
+        'font_size':13
+    }
+]
+values = { 
+    'location':'Ricreatorio Pontedecimo',
+    'date':'03/05/2021',
+    'sig_loc_date':'Genova, 03/05/2021'
+    }
 
 # Read pdf
 old_pdf = PdfFileReader(old_path)
+num_pages = old_pdf.getNumPages()
 
 # Create new content
 packet = BytesIO()
 canvas = Canvas(packet)
-canvas.setStrokeColorRGB(1, 0, 0)
-canvas.setFontSize(10)
-canvas.drawString(pos_x, pos_y, string_to_write)
+
+for page_num in range(1, num_pages+1):
+    for field in fields:
+        if(field['page']==page_num):
+            canvas.setFontSize(field['font_size'])
+            value = values[field['name']]
+            canvas.drawString(field['pos_x'], field['pos_y'], value)
+    canvas.showPage()
+
 canvas.save()
 
 # Move to the beginning of the StringIO buffer
@@ -34,9 +66,10 @@ new_content = PdfFileReader(packet)
 new_pdf = PdfFileWriter()
 
 # Add new content to old pdf
-page = old_pdf.getPage(0)
-page.mergePage(new_content.getPage(0))
-new_pdf.addPage(page)
+for page_num in range(num_pages):
+    page = old_pdf.getPage(page_num)
+    page.mergePage(new_content.getPage(page_num))
+    new_pdf.addPage(page)
 
 with Path(new_path).open(mode="wb") as output_file:
     new_pdf.write(output_file)
