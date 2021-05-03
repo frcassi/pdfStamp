@@ -99,7 +99,6 @@ if not os.path.isdir(new_base_path):
 for filename in os.listdir(path):
     if filename.endswith(".pdf"):
         stamp_pdf(path, filename)
-        break
     else:
         print("Not stamped:" + str(os.path.join(path, filename)))
         continue
